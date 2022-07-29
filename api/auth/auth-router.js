@@ -9,7 +9,7 @@ const {
   checkUsernameExists
 } = require('./auth-middleware')
 
-router.post('/register', verifyCreditials, checkIfUsernameTaken, (req, res, next) => {
+router.post('/register', verifyCreditials, checkIfUsernameTaken, async (req, res, next) => {
   let {user} = req
   const hash = bcrypt.hashSync(user.password, 8)
   user.password = hash
@@ -47,7 +47,7 @@ router.post('/register', verifyCreditials, checkIfUsernameTaken, (req, res, next
   */
 });
 
-router.post('/login', verifyCreditials, checkUsernameExists, (req, res, next) => {
+router.post('/login', verifyCreditials, checkUsernameExists, async (req, res, next) => {
   let { username, password } = req.user
   try {
     const [user] = await User.findBy({ username });

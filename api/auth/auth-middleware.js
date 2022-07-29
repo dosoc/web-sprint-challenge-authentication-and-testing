@@ -28,7 +28,7 @@ const verifyCreditials = (req, res, next) => {
 }
 
 const checkUsernameExists = (req, res, next) => {
-
+next()
 }
 
 module.exports = {
