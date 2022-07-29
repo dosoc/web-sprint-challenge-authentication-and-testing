@@ -14,7 +14,7 @@ const checkIfUsernameTaken = async (req, res, next) => {
 
 const verifyCreditials = (req, res, next) => {
     const { username, password } = req.body
-    if (!username || !password) {
+    if (!username || !password || !username.trim() || !password.trim()) {
         res.status(400).json({
             message: 'username and password required'
         });
@@ -27,8 +27,16 @@ const verifyCreditials = (req, res, next) => {
     next()
 }
 
-const checkUsernameExists = (req, res, next) => {
-next()
+const checkUsernameExists = async (req, res, next) => {
+    const {username} = req.user;
+    const [user] = await User.findBy({username});
+    if (!user) {
+        res.status(400).json({
+            message: 'invalid credentials'
+        })
+        return;
+    } 
+    next()
 }
 
 module.exports = {
