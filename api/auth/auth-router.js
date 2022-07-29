@@ -1,7 +1,25 @@
 const router = require('express').Router();
+const User = require('../users/users-model')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const { JWT_SECRET } = require('../secret/index')
+const {
+  checkIfUsernameTaken,
+  verifyCreditials,
+  checkUsernameExists
+} = require('./auth-middleware')
 
-router.post('/register', (req, res) => {
-  res.end('implement register, please!');
+router.post('/register', verifyCreditials, checkIfUsernameTaken, (req, res, next) => {
+  let {user} = req
+  const hash = bcrypt.hashSync(user.password, 8)
+  user.password = hash
+
+  try {
+    const saved = await User.add(user);
+    res.status(201).json(saved)
+  } catch (err) {
+    next(err)
+  }
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -29,8 +47,20 @@ router.post('/register', (req, res) => {
   */
 });
 
-router.post('/login', (req, res) => {
-  res.end('implement login, please!');
+router.post('/login', verifyCreditials, checkUsernameExists, (req, res, next) => {
+  let { username, password } = req.user
+  try {
+    const [user] = await User.findBy({ username });
+    if (user && bcrypt.compareSync(password, user.password)) {
+      const token = createJwt(user)
+      res.status(200).json({ 
+        message: `welcome, ${user.username}`,
+        token
+      })
+    }
+  } catch (err) {
+    next(err)
+  }
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -55,5 +85,16 @@ router.post('/login', (req, res) => {
       the response body should include a string exactly as follows: "invalid credentials".
   */
 });
+
+function createJwt(user) {
+  const payload = {
+    subject: user.id,
+    username: user.username,
+  };
+  const options = {
+    expiresIn: '1d'
+  };
+  return jwt.sign(payload, JWT_SECRET, options)
+}
 
 module.exports = router;

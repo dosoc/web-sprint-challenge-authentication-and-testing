@@ -1,5 +1,16 @@
+const jwt = require('jsonwebtoken')
+const { JWT_SECRET } = require('../secret/index')
+
 module.exports = (req, res, next) => {
-  next();
+  jwt.verify(req.headers.authorization, JWT_SECRET, (err, decodedToken) => {
+    if(err) {
+      res.status(401).json({ message: 'token invalid'});
+      return;
+    }
+
+    req.jwt = decodedToken;
+    next();
+  })
   /*
     IMPLEMENT
 
