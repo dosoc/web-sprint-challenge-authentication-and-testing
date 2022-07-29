@@ -5,4 +5,6 @@ test('sanity', () => {
   expect(4).not.toEqual(5)
 })
 
-describe('error')
+describe('invalid username', () => {
+
+})
